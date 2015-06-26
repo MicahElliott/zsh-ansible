@@ -1,0 +1,37 @@
+#! /usr/bin/env zsh
+#set -x
+
+# ans — wrapper around ansible for better completion
+
+usage='Call ansible with yaml-like syntax, support zsh completion.
+
+usage:
+  % ans HOSTGROUP MODULE MODARG=VAL... [OPTIONS]
+
+example:
+  % ans appsvrs yum: name=zsh state=present -C'
+
+# ansible replis -mcopy -a 'src=roles/common/files/bin/myscript dest=~myuser/bin/ owner=myuser'
+
+if [[ $#argv < 1 ]]; then
+  print $usage
+  exit
+fi
+
+host=${1?Must provide host group}
+mod=${2?Must provide module}
+arg1=${3?Must provide at least one arg}
+
+integer nargs=0
+modargs=$argv[3,$#argv]  # might not be any options
+for a in $argv; do
+  # print $nargs $a
+  if [[ $a =~ '^-' ]]; then
+    modargs=$argv[3,$nargs]
+    break
+  fi
+  nargs+=1
+done
+
+print -- ansible $host -m ${mod/:/} -a $modargs $=argv[$nargs+1,-1]
+ansible $host -m ${mod/:/} -a $modargs $=argv[$nargs+1,-1]
